@@ -158,13 +158,113 @@ export default function AviatorGame() {
     });
   };
 
-  const renderBettingPanel = (panelIndex) => (
-    <div className="bg-[#232736] p-6 rounded-lg">
+
+
+/*  ...................................................................*/
+const renderBettingPanel = (panelIndex) => {
+  const [isAutoBet, setIsAutoBet] = React.useState(false); // State to toggle Auto Bet popup
+
+  return (
+    <div className="bg-[#111827] p-6 rounded-lg relative">
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between">
-          <div className="text-lg font-semibold">Bet {panelIndex + 1}</div>
+        {/* Bet and Auto Bet Buttons */}
+        <div className="flex justify-between items-center">
+          <div className="flex gap-2">
+            <button
+              className="bg-[#4caf50] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#45a049] transition-colors"
+              onClick={() => setIsAutoBet(false)}
+            >
+              Bet
+            </button>
+            <button
+              className="bg-[#ffc107] text-black px-4 py-2 rounded-lg font-semibold hover:bg-[#ffca28] transition-colors"
+              onClick={() => setIsAutoBet(true)}
+            >
+              Auto Bet
+            </button>
+          </div>
         </div>
 
+        {/* Auto Bet Popup */}
+        {isAutoBet && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50">
+            <div className="bg-[#232736] p-8 rounded-xl shadow-2xl text-white w-96 relative">
+              {/* Close Button */}
+              <button
+                className="absolute top-4 right-4 bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-600"
+                onClick={() => setIsAutoBet(false)}
+              >
+                X
+              </button>
+              <h3 className="text-xl font-bold mb-6">Auto Play Options</h3>
+              <div className="flex flex-col gap-5">
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Number of Rounds:</label>
+                  <div className="flex gap-3">
+                    {[10, 20, 50, 100].map((rounds) => (
+                      <button
+                        key={rounds}
+                        className="bg-yellow-500 text-black py-2 px-4 rounded-lg hover:bg-yellow-400"
+                        onClick={() => console.log(`Rounds set to ${rounds}`)}
+                      >
+                        {rounds}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">
+                    Stop if cash decreases by:
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Enter amount"
+                    className="w-full bg-[#111827] p-3 rounded-lg text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">
+                    Stop if cash increases by:
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Enter amount"
+                    className="w-full bg-[#111827] p-3 rounded-lg text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">
+                    Stop if single win exceeds:
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Enter amount"
+                    className="w-full bg-[#111827] p-3 rounded-lg text-white"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between items-center mt-8">
+                <button
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+                  onClick={() => setIsAutoBet(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                  onClick={() => {
+                    console.log('Auto Bet Configured');
+                    setIsAutoBet(false);
+                  }}
+                >
+                  Start Auto Bet
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Betting Inputs and Buttons */}
         <div className="flex gap-2">
           <button
             className="w-10 h-10 bg-[#2c3140] rounded-md text-xl font-bold hover:bg-[#3a3f50]"
@@ -176,7 +276,7 @@ export default function AviatorGame() {
             type="number"
             value={betAmounts[panelIndex]}
             onChange={(e) => handleAmountChange(parseFloat(e.target.value) || 0, panelIndex)}
-            className="flex-1 bg-[#2c3140] rounded-md text-center text-xl p-2"
+            className="flex-1 bg-[#2c3140] text-white rounded-md text-center text-xl p-2"
           />
           <button
             className="w-10 h-10 bg-[#2c3140] rounded-md text-xl font-bold hover:bg-[#3a3f50]"
@@ -218,9 +318,12 @@ export default function AviatorGame() {
       </div>
     </div>
   );
+};
+
+
 
   return (
-    <div className="max-h-screen overflow-hidden bg-[#1a1d29] text-white font-sans min-h-screen">
+    <div className="max-h-[125vh] overflow-hidden bg-[#1a1d29] text-white font-sans min-h-screen">
       <audio ref={audioRef} src="/crash-sound.mp3" />
       
       <header className="flex items-center justify-between p-4 bg-[#232736]">
@@ -261,7 +364,7 @@ export default function AviatorGame() {
           ))}
         </div>
 
-        <div className="relative w-full h-[40vh] bg-[#232736] rounded-lg overflow-hidden mb-4">
+        <div className="relative w-full h-[50vh] bg-[#232736] rounded-lg overflow-hidden mb-4">
           <canvas
             ref={canvasRef}
             width={CANVAS_WIDTH}
