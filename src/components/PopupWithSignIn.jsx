@@ -8,7 +8,7 @@ export default function PopupWithSignIn() {
   useEffect(() => {
     setIsOpen(true);
   }, []);
-
+ 
   const closePopup = () => setIsOpen(false);
 
   const handleChange = (e) => {

@@ -34,7 +34,7 @@ export default function GameMenu() {
               <span className="text-gray-300">Sound</span>
             </div>
             <Switch
-              checked={settings.sound}
+              checked={settings.sound} 
               onCheckedChange={(checked) => setSettings(prev => ({ ...prev, sound: checked }))}
               className="data-[state=checked]:bg-green-500"
             />

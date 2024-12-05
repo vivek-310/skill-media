@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Menu, HelpCircle, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 400;
 const PLANE_SIZE = 60;
