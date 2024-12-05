@@ -1,136 +1,304 @@
-'use client' // Ensures this runs client-side for interactive UI elements
-import React, { useState } from 'react';
-import { Menu, HelpCircle } from 'lucide-react';
+'use client'
+
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Menu, HelpCircle, Volume2, VolumeX } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const CANVAS_WIDTH = 800;
+const CANVAS_HEIGHT = 400;
+const PLANE_SIZE = 60;
+
 export default function AviatorGame() {
-  const [balance, setBalance] = useState(5000.0); // Default balance
-  const [betAmount, setBetAmount] = useState(10.0); // Default bet amount
-  const multipliers = [
-    '3.79x', '1.19x', '3.04x', '1.07x', '2.28x', '1.82x', '1.34x', '1.32x', '1.25x', '1.34x', '1.82x', '1.24x', '1.00x',
-  ];
-  // Handle bet placement (to be securely handled via backend API in production)
-  const handleBetClick = async () => {
-    try {
-      // Example POST request (replace with actual API endpoint)
-      const response = await fetch(`$/place-bet`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ betAmount }),
+  const [balance, setBalance] = useState(5000.0);
+  const [betAmounts, setBetAmounts] = useState([10.0, 10.0]);
+  const [currentMultiplier, setCurrentMultiplier] = useState(1.0);
+  const [isGameRunning, setIsGameRunning] = useState(false);
+  const [gameHistory, setGameHistory] = useState([]);
+  const [activeBets, setActiveBets] = useState([null, null]);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [showCrashAnimation, setShowCrashAnimation] = useState(false);
+
+  const canvasRef = useRef(null);
+  const planeRef = useRef(null);
+  const audioRef = useRef(null);
+  const animationRef = useRef(null);
+
+  useEffect(() => {
+    const planeImage = new Image();
+    planeImage.src = '/plane.png';
+    planeImage.crossOrigin = 'anonymous';
+    planeImage.onload = () => {
+      planeRef.current = planeImage;
+    };
+  }, []);
+
+  const drawPlane = useCallback((ctx, progress, isCrashed = false) => {
+    if (!planeRef.current) return;
+
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    
+    // Draw attractive flight curve
+    ctx.beginPath();
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 3;
+    ctx.moveTo(0, CANVAS_HEIGHT);
+    
+    for (let x = 0; x <= progress * CANVAS_WIDTH; x++) {
+      const normalizedX = x / CANVAS_WIDTH;
+      const y = CANVAS_HEIGHT - (Math.sin(normalizedX * Math.PI) * CANVAS_HEIGHT * 0.8);
+      ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Calculate plane position
+    const x = progress * CANVAS_WIDTH;
+    const y = CANVAS_HEIGHT - (Math.sin(progress * Math.PI) * CANVAS_HEIGHT * 0.8);
+    
+    ctx.save();
+    ctx.translate(x, y);
+    
+    // Rotate plane based on trajectory
+    const angle = isCrashed ? Math.PI / 2 : Math.atan2(
+      (Math.sin((progress + 0.01) * Math.PI) - Math.sin(progress * Math.PI)) * CANVAS_HEIGHT * 0.8,
+      0.01 * CANVAS_WIDTH
+    );
+    ctx.rotate(-angle);
+    
+    ctx.drawImage(
+      planeRef.current,
+      -PLANE_SIZE / 2,
+      -PLANE_SIZE / 2,
+      PLANE_SIZE,
+      PLANE_SIZE
+    );
+    
+    ctx.restore();
+  }, []);
+
+  const startGame = useCallback(() => {
+    if (!activeBets.some(bet => bet !== null)) return;
+
+    setIsGameRunning(true);
+    setCurrentMultiplier(1.0);
+    setShowCrashAnimation(false);
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    let progress = 0;
+    let crashed = false;
+
+    const animate = (timestamp) => {
+      if (!canvas) return;
+
+      progress += 0.005;
+      const multiplier = 1 + (Math.sin(progress * Math.PI / 2) * 9); // Max multiplier of 10
+      setCurrentMultiplier(parseFloat(multiplier.toFixed(2)));
+
+      // Check for crash
+      if (Math.random() < 0.01 || multiplier > 10) {
+        crashed = true;
+        setIsGameRunning(false);
+        setShowCrashAnimation(true);
+        setGameHistory(prev => [multiplier, ...prev].slice(0, 10));
+        if (isSoundEnabled && audioRef.current) {
+          audioRef.current.play();
+        }
+        drawPlane(ctx, progress, true);
+        setActiveBets([null, null]);
+        return;
+      }
+
+      drawPlane(ctx, progress, crashed);
+
+      if (!crashed) {
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+  }, [drawPlane, isSoundEnabled, activeBets]);
+
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, []);
+
+  const handleBetClick = (panelIndex) => {
+    if (balance >= betAmounts[panelIndex] && !isGameRunning) {
+      setBalance(prev => prev - betAmounts[panelIndex]);
+      setActiveBets(prev => {
+        const newBets = [...prev];
+        newBets[panelIndex] = betAmounts[panelIndex];
+        return newBets;
       });
-      if (!response.ok) throw new Error('Bet placement failed');
-      console.log('Bet placed successfully:', betAmount);
-    } catch (error) {
-      console.error('Error placing bet:', error.message);
     }
   };
-  // Handle input validation for the bet amount
-  const handleAmountChange = (value) => {
-    setBetAmount(Math.max(0, value)); // Ensure bet amount is non-negative
-  };
-  return (
-    <div className="max-h-screen overflow-hidden">
 
-    <div className="bg-black text-white font-sans">
-      {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b border-gray-800">
+  const handleCashOut = (panelIndex) => {
+    if (activeBets[panelIndex] && isGameRunning) {
+      const winnings = activeBets[panelIndex] * currentMultiplier;
+      setBalance(prev => prev + winnings);
+      setActiveBets(prev => {
+        const newBets = [...prev];
+        newBets[panelIndex] = null;
+        return newBets;
+      });
+    }
+  };
+
+  const handleAmountChange = (value, panelIndex) => {
+    setBetAmounts(prev => {
+      const newAmounts = [...prev];
+      newAmounts[panelIndex] = Math.max(0, Math.min(value, balance));
+      return newAmounts;
+    });
+  };
+
+  const renderBettingPanel = (panelIndex) => (
+    <div className="bg-[#232736] p-6 rounded-lg">
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between">
+          <div className="text-lg font-semibold">Bet {panelIndex + 1}</div>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            className="w-10 h-10 bg-[#2c3140] rounded-md text-xl font-bold hover:bg-[#3a3f50]"
+            onClick={() => handleAmountChange(betAmounts[panelIndex] - 10, panelIndex)}
+          >
+            -
+          </button>
+          <input
+            type="number"
+            value={betAmounts[panelIndex]}
+            onChange={(e) => handleAmountChange(parseFloat(e.target.value) || 0, panelIndex)}
+            className="flex-1 bg-[#2c3140] rounded-md text-center text-xl p-2"
+          />
+          <button
+            className="w-10 h-10 bg-[#2c3140] rounded-md text-xl font-bold hover:bg-[#3a3f50]"
+            onClick={() => handleAmountChange(betAmounts[panelIndex] + 10, panelIndex)}
+          >
+            +
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          {[100, 200, 500, 1000].map((amount) => (
+            <button
+              key={amount}
+              className="bg-[#2c3140] py-2 rounded-md text-sm hover:bg-[#3a3f50] transition-colors"
+              onClick={() => handleAmountChange(amount, panelIndex)}
+            >
+              {amount.toFixed(2)}
+            </button>
+          ))}
+        </div>
+
+        {activeBets[panelIndex] ? (
+          <button
+            onClick={() => handleCashOut(panelIndex)}
+            className="w-full py-3 bg-[#ffc107] text-black rounded-md text-lg font-bold hover:bg-[#ffca28] transition-colors"
+            disabled={!isGameRunning}
+          >
+            CASH OUT {(activeBets[panelIndex] * currentMultiplier).toFixed(2)} INR
+          </button>
+        ) : (
+          <button
+            onClick={() => handleBetClick(panelIndex)}
+            className="w-full py-3 bg-[#4caf50] text-white rounded-md text-lg font-bold hover:bg-[#45a049] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isGameRunning}
+          >
+            {isGameRunning ? 'GAME IN PROGRESS' : `BET ${betAmounts[panelIndex].toFixed(2)} INR`}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="max-h-screen overflow-hidden bg-[#1a1d29] text-white font-sans min-h-screen">
+      <audio ref={audioRef} src="/crash-sound.mp3" />
+      
+      <header className="flex items-center justify-between p-4 bg-[#232736]">
         <div className="flex items-center gap-4">
-          <div className="text-red-500 font-bold text-2xl">Aviator</div>
-          <button className="px-3 py-1 text-sm border border-gray-600 rounded-md flex items-center gap-2 hover:bg-gray-800">
+          <div className="text-[#ff4d4d] font-bold text-2xl">Aviator</div>
+          <button className="px-3 py-1 text-sm border border-[#3a3f50] rounded-md flex items-center gap-2 hover:bg-[#2c3140]">
             <HelpCircle className="w-4 h-4" />
             How to play?
           </button>
         </div>
         <div className="flex items-center gap-4">
-          <div className="text-green-500 font-mono text-xl">
+          <button
+            onClick={() => setIsSoundEnabled(!isSoundEnabled)}
+            className="text-[#8c91a7] hover:text-white"
+          >
+            {isSoundEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
+          </button>
+          <div className="text-[#00ff00] font-mono text-xl">
             {balance.toFixed(2)} <span className="text-sm">INR</span>
           </div>
-          <button className="text-gray-400 hover:text-white">
+          <button className="text-[#8c91a7] hover:text-white">
             <Menu className="w-6 h-6" />
           </button>
         </div>
       </header>
-      {/* Main Section */}
-      <main className="p-4">
-        {/* Multipliers */}
-        <div className="flex h-8 gap-2 overflow-x-auto py-2 mb-4">
-          {multipliers.map((multiplier, index) => (
+
+      <main className="p-6">
+        <div className="flex gap-2 overflow-x-auto py-2 mb-4">
+          {gameHistory.map((multiplier, index) => (
             <div
               key={index}
-              className={`font-mono whitespace-nowrap ${index % 2 === 0 ? 'text-blue-400' : 'text-purple-500'}`}
+              className={`font-mono whitespace-nowrap px-2 py-1 rounded ${
+                multiplier >= 2 ? 'bg-[#1c7857] text-[#00ff00]' : 'bg-[#78242e] text-[#ff4d4d]'
+              }`}
             >
-              {multiplier}
+              {multiplier.toFixed(2)}x
             </div>
           ))}
         </div>
-        {/* Bet Details */}
-        <div className="flex justify-between mb-4">
-          <div className="text-sm text-gray-400">ALL BETS</div>
-          <button className="text-sm text-gray-400 hover:text-white">Previous hand</button>
-        </div>
-        {/* Game Animation Placeholder */}
-        <div className="relative w-full h-[40vh] bg-gray-900 rounded-lg overflow-hidden mb-4">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)]" />
-          <div className="absolute left-1/2 bottom-1/4 transform -translate-x-1/2 text-red-500">
-            <svg width="100" height="100" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M22 16.5L12 23L2 16.5V7.5L12 1L22 7.5V16.5Z" />
-            </svg>
+
+        <div className="relative w-full h-[40vh] bg-[#232736] rounded-lg overflow-hidden mb-4">
+          <canvas
+            ref={canvasRef}
+            width={CANVAS_WIDTH}
+            height={CANVAS_HEIGHT}
+            className="absolute inset-0 w-full h-full"
+          />
+          <AnimatePresence>
+            {showCrashAnimation && (
+              <motion.div
+                initial={{ scale: 1, opacity: 1 }}
+                animate={{ scale: 2, opacity: 0 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0 flex items-center justify-center text-[#ff4d4d] text-6xl font-bold"
+              >
+                CRASHED AT {currentMultiplier.toFixed(2)}x
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <div className="absolute top-4 left-4 text-4xl font-bold">
+            {currentMultiplier.toFixed(2)}x
           </div>
         </div>
-        {/* Betting Panels */}
-        <div className=" h-1/6 grid grid-cols-2 gap-4">
-          {[1, 2].map((panel) => (
-            <div key={panel} className="bg-gray-900 p-4 rounded-lg">
-              {/* Panel Header */}
-              <div className="flex justify-between mb-4">
-                <button className="text-sm text-gray-400 hover:text-white">Bet</button>
-                <button className="text-sm text-gray-400 hover:text-white">Auto</button>
-              </div>
-              {/* Bet Amount Adjuster */}
-              <div className="flex gap-2 mb-4">
-                <button
-                  className="w-10 h-10 bg-gray-800 rounded-md text-xl font-bold"
-                  onClick={() => handleAmountChange(betAmount - 10)}
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  value={betAmount}
-                  onChange={(e) => handleAmountChange(parseFloat(e.target.value) || 0)}
-                  className="flex-1 bg-gray-800 rounded-md text-center text-xl"
-                />
-                <button
-                  className="w-10 h-10 bg-gray-800 rounded-md text-xl font-bold"
-                  onClick={() => handleAmountChange(betAmount + 10)}
-                >
-                  +
-                </button>
-              </div>
-              {/* Quick Bet Amounts */}
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                {[100, 200, 500, 1000].map((amount) => (
-                  <button
-                  key={amount}
-                  className="bg-gray-800 py-1 rounded-md text-sm"
-                  onClick={() => handleAmountChange(amount)}
-                  >
-                    {amount.toFixed(2)}
-                  </button>
-                ))}
-              </div>
-              {/* Bet Button */}
-              <button
-                onClick={handleBetClick}
-                className="w-full py-2 bg-green-600 rounded-md text-lg font-bold hover:bg-green-700"
-              >
-                BET {betAmount.toFixed(2)} INR
-              </button>
-            </div>
-          ))}
+
+        {!isGameRunning && activeBets.some(bet => bet !== null) && (
+          <button
+            onClick={startGame}
+            className="w-full py-3 bg-[#4caf50] text-white rounded-md text-lg font-bold hover:bg-[#45a049] transition-colors mb-4"
+          >
+            START GAME
+          </button>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[0, 1].map((index) => renderBettingPanel(index))}
         </div>
       </main>
     </div>
-    </div>
   );
 }
+
