@@ -53,7 +53,7 @@ export default function AviatorGame() {
       {/* Main Section */}
       <main className="p-4">
         {/* Multipliers */}
-        <div className="flex gap-2 overflow-x-auto py-2 mb-4">
+        <div className="flex h-8 gap-2 overflow-x-auto py-2 mb-4">
           {multipliers.map((multiplier, index) => (
             <div
               key={index}
@@ -78,7 +78,7 @@ export default function AviatorGame() {
           </div>
         </div>
         {/* Betting Panels */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className=" h-1/6 grid grid-cols-2 gap-4">
           {[1, 2].map((panel) => (
             <div key={panel} className="bg-gray-900 p-4 rounded-lg">
               {/* Panel Header */}

@@ -4,7 +4,7 @@ import BetHistory from "../components/BetHistory";
 import { Trophy } from 'lucide-react';
 
 
-const BettingGameInterface = () => {
+const  LandingPage= () => {
 
     return (
         <div className="min-h-screen bg-purple-950 text-white">
@@ -46,4 +46,4 @@ const BettingGameInterface = () => {
     );
 };
 
-export default BettingGameInterface;
+export default LandingPage;
