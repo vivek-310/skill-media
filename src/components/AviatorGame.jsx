@@ -174,7 +174,7 @@ export default function AviatorGame() {
 
 
 
-/*  ...................................................................*/
+/*  ...........................for understanding the flow........................................*/
 const renderBettingPanel = (panelIndex) => {
   const [isAutoBet, setIsAutoBet] = React.useState(false); // State to toggle Auto Bet popup
 
@@ -279,6 +279,7 @@ const renderBettingPanel = (panelIndex) => {
         )}
 
         {/* Betting Inputs and Buttons */}
+
         <div className="flex gap-2">
           <button
             className="w-10 h-10 bg-[#2c3140] rounded-md text-xl font-bold hover:bg-[#3a3f50]"
