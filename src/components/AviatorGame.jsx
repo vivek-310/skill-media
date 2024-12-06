@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Menu, HelpCircle, Volume2, VolumeX } from 'lucide-react';
+import { Menu, HelpCircle, Volume2, VolumeX,Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 
@@ -19,10 +19,24 @@ export default function AviatorGame() {
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [showCrashAnimation, setShowCrashAnimation] = useState(false);
 
+
+  const [toggleOption, setToggleOption] = useState(false);//toggle in the menu
+  const [togglesound,setTogglesound]=useState(false);
+  const [toggleanimation,setToggleanimation]=useState(false);
+
+
   const canvasRef = useRef(null);
   const planeRef = useRef(null);
   const audioRef = useRef(null);
   const animationRef = useRef(null);
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleMenuToggle = () => {
+    setIsOpen((prev) => !prev);
+  };
+  
+
 
   useEffect(() => {
     const planeImage = new Image();
@@ -327,13 +341,14 @@ const renderBettingPanel = (panelIndex) => {
       <audio ref={audioRef} src="/crash-sound.mp3" />
       
       <header className="flex items-center justify-between p-4 bg-[#232736]">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4">
           <div className="text-[#ff4d4d] font-bold text-2xl">Aviator</div>
           <button className="px-3 py-1 text-sm border border-[#3a3f50] rounded-md flex items-center gap-2 hover:bg-[#2c3140]">
             <HelpCircle className="w-4 h-4" />
             How to play?
           </button>
         </div>
+        <div className='flex flex-row gap-4'>
         <div className="flex items-center gap-4">
           <button
             onClick={() => setIsSoundEnabled(!isSoundEnabled)}
@@ -344,9 +359,84 @@ const renderBettingPanel = (panelIndex) => {
           <div className="text-[#00ff00] font-mono text-xl">
             {balance.toFixed(2)} <span className="text-sm">INR</span>
           </div>
-          <button className="text-[#8c91a7] hover:text-white">
+          </div>
+        <div className="relative">
+          <button
+            onClick={handleMenuToggle}
+            className="text-[#8c91a7] hover:text-white"
+          >
             <Menu className="w-6 h-6" />
           </button>
+          {isOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-gray-800 text-white shadow-lg rounded-md py-2 z-10">
+              <a
+                href="#profile"
+                className="block px-4 py-2 hover:bg-gray-900 transition"
+              >
+                My Profile
+              </a>
+              <div className="px-4 py-2 flex items-center justify-between">
+                <span>Sound</span>
+                <button
+                  className={`w-10 h-6 flex p-1 items-center rounded-full transition ${
+                    toggleOption ? 'bg-green-500' : 'bg-gray-300'
+                  }`}
+                  onClick={() => setToggleOption(!toggleOption)}
+                >
+                  <span
+                    className={`block w-4 h-4 bg-white rounded-full transition-transform ${
+                      toggleOption ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  ></span>
+                </button>
+              </div>
+              <div className="px-4 py-2 flex items-center justify-between">
+                <span>Music</span>
+                <button
+                  className={`w-10 h-6 flex p-1 items-center rounded-full transition ${
+                    togglesound ? 'bg-green-500' : 'bg-gray-300'
+                  }`}
+                  onClick={() => setTogglesound(!togglesound)}
+                >
+                  <span
+                    className={`block w-4 h-4 bg-white rounded-full transition-transform ${
+                      togglesound ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  ></span>
+                </button>
+              </div>
+              <a
+            href="#settings"
+            className="block px-4 py-2  hover:bg-gray-900 transition"
+          >
+              <div className='flex flex-row gap-2  display-inline-block'>
+            <Star className='w-5 h-5 '/>
+            Free Bets
+          </div>
+          </a>
+          
+          <a
+            href="#logout"
+            className="block px-4 py-2 hover:bg-gray-900 transition"
+          >
+            Bet History
+          </a>
+          <a
+            href="#settings"
+            className="block px-4 py-2  hover:bg-gray-900 transition"
+          >
+            Game Limits
+          </a>
+          <a
+            href="#settings"
+            className="block px-4 py-2  hover:bg-gray-900 transition"
+          >
+            How to Play
+          </a>
+
+            </div>
+          )}
+          </div>
         </div>
       </header>
 
