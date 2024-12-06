@@ -341,10 +341,10 @@ const renderBettingPanel = (panelIndex) => {
     <div className="max-h-[125vh] overflow-hidden bg-[#1a1d29] text-white font-sans min-h-screen">
       <audio ref={audioRef} src="/crash-sound.mp3" />
       
-      <header className="flex items-center justify-between p-4 bg-[#232736]">
+      <header className="flex items-center justify-between p-4 px-[2vw] bg-[#232736]">
       <div className="flex items-center gap-4">
-          <div className="text-[#ff4d4d] font-bold text-2xl">Aviator</div>
-          <button className="px-3 py-1 text-sm border border-[#3a3f50] rounded-md flex items-center gap-2 hover:bg-[#2c3140]">
+          <div className="text-[#ff4d4d] font-bold text-3xl">Aviator</div>
+          <button className="px-4 py-2 text-sm border border-[#3a3f50] bg-black rounded-md flex items-center gap-2 hover:bg-[#2c3140]">
             <HelpCircle className="w-4 h-4" />
             How to play?
           </button>
@@ -357,16 +357,16 @@ const renderBettingPanel = (panelIndex) => {
           >
             {isSoundEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
           </button>
-          <div className="text-[#00ff00] font-mono text-xl">
-            {balance.toFixed(2)} <span className="text-sm">INR</span>
+          <div className="text-[#00ff00] font-mono text-2xl">
+            {balance.toFixed(2)} <span className="text-xl">INR</span>
           </div>
           </div>
         <div className="relative">
           <button
             onClick={handleMenuToggle}
-            className="text-[#8c91a7] hover:text-white"
+            className="text-[#8c91a7] hover:text-white flex items-center justify-center"
           >
-            <Menu className="w-6 h-6" />
+            <Menu className="w-9 h-9" />
           </button>
           {isOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-gray-800 text-white shadow-lg rounded-md py-2 z-10">
