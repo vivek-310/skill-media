@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-
 export default function PopupWithSignIn() {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
