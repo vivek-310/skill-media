@@ -15,13 +15,13 @@ export default function BetHistory() {
     { user: 'User 6', bet: 250, multiplier: 1.9, cashOut: 475, image: 'https://via.placeholder.com/40/2ecc71' },
     { user: 'User 7', bet: 800, multiplier: 3.0, cashOut: 2400, image: 'https://via.placeholder.com/40/34495e' },
     { user: 'User 8', bet: 350, multiplier: 1.3, cashOut: 455, image: 'https://via.placeholder.com/40/16a085' },
-    { user: 'User 9', bet: 600, multiplier: 2.2, cashOut: 1320, image: 'https://via.placeholder.com/40/27ae60' },
-    { user: 'User 5', bet: 400, multiplier: 2.5, cashOut: 1000, image: 'https://via.placeholder.com/40/8e44ad' },
-    { user: 'User 6', bet: 250, multiplier: 1.9, cashOut: 475, image: 'https://via.placeholder.com/40/2ecc71' },
-    { user: 'User 7', bet: 800, multiplier: 3.0, cashOut: 2400, image: 'https://via.placeholder.com/40/34495e' },
-    { user: 'User 8', bet: 350, multiplier: 1.3, cashOut: 455, image: 'https://via.placeholder.com/40/16a085' },
-    { user: 'User 9', bet: 600, multiplier: 2.2, cashOut: 1320, image: 'https://via.placeholder.com/40/27ae60' },
-    { user: 'User 10', bet: 750, multiplier: 1.7, cashOut: 355, image: 'https://via.placeholder.com/40/34495e' },
+     { user: 'User 9', bet: 600, multiplier: 2.2, cashOut: 1320, image: 'https://via.placeholder.com/40/27ae60' },
+    // { user: 'User 5', bet: 400, multiplier: 2.5, cashOut: 1000, image: 'https://via.placeholder.com/40/8e44ad' },
+    // { user: 'User 6', bet: 250, multiplier: 1.9, cashOut: 475, image: 'https://via.placeholder.com/40/2ecc71' },
+    //  { user: 'User 7', bet: 800, multiplier: 3.0, cashOut: 2400, image: 'https://via.placeholder.com/40/34495e' },
+    // { user: 'User 8', bet: 350, multiplier: 1.3, cashOut: 455, image: 'https://via.placeholder.com/40/16a085' },
+    // { user: 'User 9', bet: 600, multiplier: 2.2, cashOut: 1320, image: 'https://via.placeholder.com/40/27ae60' },
+    // { user: 'User 10', bet: 750, multiplier: 1.7, cashOut: 355, image: 'https://via.placeholder.com/40/34495e' },
     
    
     
@@ -43,7 +43,7 @@ export default function BetHistory() {
   }
 
   return (
-    <div className="relative w-full bg-gray-900 text-white min-h-[115vh] ">
+    <div className="relative w-full bg-gray-900 text-white min-h-[90vh] ">
       <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800">
         <div className="flex gap-4">
           {['all', 'my', 'top'].map((tab) => (
@@ -75,21 +75,36 @@ export default function BetHistory() {
         <div className="text-right">Cash out INR</div>
       </div>
 
-      <div className="overflow-y-auto max-h-[1000px]">
-        <table className="w-full text-sm text-gray-400">
+      <div className="overflow-y-auto max-h-[600px] ">
+        <table className="w-full  text-sm text-gray-400  ">
           <tbody>
             {getTabData().map((item, index) => (
               <tr
                 key={index}
-                className={`border-b border-gray-800 ${
+                className={`border-b border-gray-800  py-2 flex items-center justify-between ${
                   index % 2 === 0 ? 'bg-gray-800' : 'bg-gray-900'
                 }`}
               >
-                <td className="px-4 py-2 flex items-center gap-2">
+                <td className="px-4 py-2 flex  items-center gap-2 ">
                   <img src={item.image} alt={item.user} className="w-6 h-6 rounded-full" />
                   {item.user}
                 </td>
-                <td className="px-4 py-2 text-right">{item.bet}</td>
+                <td
+            className={` px-3 py-2  text-center text-gray-200 rounded-full ${
+              ['bg-red-600', 'bg-blue-700', 'bg-green-500', 'bg-yellow-500', 'bg-purple-700'][
+                index % 5
+              ]
+            }`}
+             style={{
+             display: 'inline-block', // Makes the colored background wrap tightly
+             minWidth: '3rem',        // Ensures consistent width
+             height: 'fit-content',   // Allows height to adjust based on text
+             padding: '0.5rem 2rem',  // Controls internal padding
+             lineHeight: '1rem',      // Adjusts text alignment within the cell
+            }}
+          >
+            {item.bet}
+               </td>
                 <td className="px-4 py-2 text-center">{item.multiplier}</td>
                 <td className="px-4 py-2 text-right">{item.cashOut}</td>
               </tr>

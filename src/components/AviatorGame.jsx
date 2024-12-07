@@ -175,12 +175,12 @@ export default function AviatorGame() {
 
 
 /*  ...........................for understanding the flow........................................*/
-const renderBettingPanel = (panelIndex) => {
-  const [isAutoBet, setIsAutoBet] = React.useState(false); // State to toggle Auto Bet popup
+const renderBettingPanel = (panelIndex) => { 
+  const [isAutoBet, setIsAutoBet] = React.useState(false); // State to toggle Auto Bet popup  #111827 
 
   return (
-    <div className="bg-[#111827] p-6 rounded-lg relative">
-      <div className="flex flex-col gap-4">
+    <div className="bg-[#111827] px-4 py-4 rounded-lg relative ">  
+      <div className="flex flex-col gap-3">
         {/* Bet and Auto Bet Buttons */}
         <div className="flex justify-between items-center">
           <div className="flex gap-2">
@@ -338,10 +338,10 @@ const renderBettingPanel = (panelIndex) => {
 
 
   return (
-    <div className="max-h-[125vh] overflow-hidden bg-[#1a1d29] text-white font-sans min-h-screen">
+    <div className="max-h-[110vh] overflow-hidden bg-[#1a1d29] text-white font-sans min-h-[55vh]">
       <audio ref={audioRef} src="/crash-sound.mp3" />
       
-      <header className="flex items-center justify-between p-4 px-[2vw] bg-[#232736]">
+      <header className="flex items-center justify-between p-2 px-[2vw] bg-[#232736]">
       <div className="flex items-center gap-4">
           <div className="text-[#ff4d4d] font-bold text-3xl">Aviator</div>
           <button className="px-4 py-2 text-sm border border-[#3a3f50] bg-black rounded-md flex items-center gap-2 hover:bg-[#2c3140]">
@@ -441,13 +441,13 @@ const renderBettingPanel = (panelIndex) => {
         </div>
       </header>
 
-      <main className="p-6">
+      <main className="px-6 py-2">
         <div className="flex gap-2 overflow-x-auto py-2 mb-4">
           {gameHistory.map((multiplier, index) => (
             <div
               key={index}
-              className={`font-mono whitespace-nowrap px-2 py-1 rounded ${
-                multiplier >= 2 ? 'bg-[#1c7857] text-[#00ff00]' : 'bg-[#78242e] text-[#ff4d4d]'
+              className={`font-mono whitespace-nowrap px-2 py-1 rounded-full ${
+                multiplier >= 2 ? 'bg-purple-700 text-white' : 'bg-red-500 text-black'
               }`}
             >
               {multiplier.toFixed(2)}x
@@ -455,7 +455,7 @@ const renderBettingPanel = (panelIndex) => {
           ))}
         </div>
 
-        <div className="relative w-full h-[50vh] bg-[#232736] rounded-lg overflow-hidden mb-4">
+        <div className="relative w-full h-[32vh] bg-[#232736] rounded-lg overflow-hidden mb-2">
           <canvas
             ref={canvasRef}
             width={CANVAS_WIDTH}
@@ -483,7 +483,7 @@ const renderBettingPanel = (panelIndex) => {
         {!isGameRunning && activeBets.some(bet => bet !== null) && (
           <button
             onClick={startGame}
-            className="w-full py-3 bg-[#4caf50] text-white rounded-md text-lg font-bold hover:bg-[#45a049] transition-colors mb-4"
+            className="w-full py-2 bg-[#4caf50] text-white rounded-md text-lg font-bold hover:bg-[#45a049] transition-colors mb-2"
           >
             START GAME
           </button>
