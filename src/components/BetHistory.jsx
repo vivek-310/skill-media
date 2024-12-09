@@ -113,4 +113,4 @@ export default function BetHistory() {
       </div>
     </div>
   )
-}
+} 
