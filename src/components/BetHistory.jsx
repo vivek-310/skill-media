@@ -107,7 +107,7 @@ export default function BetHistory() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span>Powered by</span>
+          <span>Powered  by</span>
           <span className="font-bold">SPRIBE</span>
         </div>
       </div>
